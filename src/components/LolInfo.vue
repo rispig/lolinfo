@@ -24,7 +24,11 @@ export default {
   },
   methods: {
     async getSummonerInfo() {
-      this.summonerInfo = await (await fetch('/summonerInfo?summoner=N00B&server=euw1')).json();
+      try {
+        this.summonerInfo = await (await fetch('/summonerInfo?summoner=N00B&server=euw1')).json();
+      } catch (ex) {
+        alert('An unknown error has occurred\n Try again later');
+      }
 
       this.profileIconStyle = {
         background: `url(${this.summonerInfo.profileIcon.url}) ${this.summonerInfo.profileIcon.x}px ${this.summonerInfo.profileIcon.y}px`,
@@ -45,7 +49,12 @@ export default {
     flex-direction: column;
   }
 
+  .name-rank-container {
+    flex: 1;
+  }
+
   .name-rank-container > div {
     flex: 1;
+    align-items: flex-start;
   }
 </style>

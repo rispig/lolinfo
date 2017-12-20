@@ -30,46 +30,67 @@ const middleware = webpackMiddleware(compiler, {
 env(__dirname + '/.env');
 
 const apiKeys = [process.env.API_KEY, process.env.ALT_API_KEY];
-const lastKeyUsed = 0;
+
+let lastKeyUsed = 0;
 const getAPIKey = function () {
-  return apiKeys[~lastKeyUsed + 2];
+  lastKeyUsed = ~lastKeyUsed + 2
+  console.log('using key', apiKeys[lastKeyUsed]);
+
+  return apiKeys[lastKeyUsed];
 }
 
 app.use(middleware);
 app.use(webpackHotMiddleware(compiler));
 app.use(express.static(__dirname));
 
+let cache = {};
 app.get('/summonerInfo', async (req, res, next) => {
   const {server, summoner} = req.query;
+  const cacheKey = `${server}${summoner}`;
+  if (!cache[cacheKey]) {
 
-  const summonerInfoResponse = await axios.get(`https://${server}.api.riotgames.com/lol/summoner/v3/summoners/by-name/${summoner}?api_key=${getAPIKey()}`);
+    try {
+      // Get basic summoner inf
+      const summonerInfoResponse = await axios.get(`https://${server}.api.riotgames.com/lol/summoner/v3/summoners/by-name/${summoner}?api_key=${getAPIKey()}`);
 
-  const summonerRankInfo = await axios.get(`https://${server}.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerInfoResponse.data.id}?api_key=${getAPIKey()}
-  `);
+      // Find summoner's soloQ rank
+      const summonerRankInfo = await axios.get(`https://${server}.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerInfoResponse.data.id}?api_key=${getAPIKey()}
+      `);
 
-  const soloQ = summonerRankInfo.data.filter(q => q.queueType === 'RANKED_SOLO_5x5')[0];
-  const rank = `${soloQ.tier} ${soloQ.rank}`;
+      // Get static resources CDN
+      const realmsResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/realms?api_key=${getAPIKey()}
+      `)
 
-  const realmsResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/realms?api_key=${getAPIKey()}
-  `)
-
-  const profileImagesResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/profile-icons?locale=en_US&api_key=${getAPIKey()}`)
-
-  const summonerJSON = {
-    name: summonerInfoResponse.data.name,
-    level: summonerInfoResponse.data.summonerLevel,
-    rank: rank,
-    profileIcon: {
-      url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/sprite/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.sprite}`,
-      x: profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.x,
-      y: profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.y,
-      w: profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.w,
-      h: profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.h
+      // Get profile icons list
+      const profileImagesResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/profile-icons?locale=en_US&api_key=${getAPIKey()}`)
+    } catch (ex) {
+      res.sendStatus(500);
     }
+
+    const soloQ = summonerRankInfo.data.filter(q => q.queueType === 'RANKED_SOLO_5x5')[0];
+    const rank = `${soloQ.tier} ${soloQ.rank}`;
+
+    const {x, y, w, h} = profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image;
+
+    const summonerJSON = {
+      name: summonerInfoResponse.data.name,
+      level: summonerInfoResponse.data.summonerLevel,
+      rank: rank,
+      profileIcon: {
+        url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/sprite/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.sprite}`,
+        x: x,
+        y: y,
+        w: w,
+        h: h
+      }
+    }
+
+    // Cache the response
+    cache[cacheKey] = summonerJSON;
   }
 
   res.setHeader('Content-Type', 'application/json');
-  res.send(summonerJSON);
+  res.send(cache[cacheKey]);
 });
 
 
