@@ -63,34 +63,39 @@ app.get('/summonerInfo', async (req, res, next) => {
 
       // Get profile icons list
       const profileImagesResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/profile-icons?locale=en_US&api_key=${getAPIKey()}`)
-    } catch (ex) {
-      res.sendStatus(500);
-    }
 
-    const soloQ = summonerRankInfo.data.filter(q => q.queueType === 'RANKED_SOLO_5x5')[0];
-    const rank = `${soloQ.tier} ${soloQ.rank}`;
+      const soloQ = summonerRankInfo.data.filter(q => q.queueType === 'RANKED_SOLO_5x5')[0];
+      const rank = `${soloQ.tier} ${soloQ.rank}`;
 
-    const {x, y, w, h} = profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image;
+      const {x, y, w, h} = profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image;
 
-    const summonerJSON = {
-      name: summonerInfoResponse.data.name,
-      level: summonerInfoResponse.data.summonerLevel,
-      rank: rank,
-      profileIcon: {
-        url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/sprite/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.sprite}`,
-        x: x,
-        y: y,
-        w: w,
-        h: h
+      const summonerJSON = {
+        name: summonerInfoResponse.data.name,
+        level: summonerInfoResponse.data.summonerLevel,
+        rank: rank,
+        profileIcon: {
+          url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/sprite/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.sprite}`,
+          x: x,
+          y: y,
+          w: w,
+          h: h
+        }
       }
-    }
 
-    // Cache the response
-    cache[cacheKey] = summonerJSON;
+      // Cache the response
+      cache[cacheKey] = summonerJSON;
+
+    } catch (ex) {
+      console.log(ex && ex.response ? ex.response.statusText || "" : "");
+      res.status(ex && ex.response ? ex.response.status || 500 : 500);
+      res.send(ex && ex.response ? ex.response.statusText || "" : "");
+      return next();
+    }
   }
 
   res.setHeader('Content-Type', 'application/json');
   res.send(cache[cacheKey]);
+  return next();
 });
 
 
