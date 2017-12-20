@@ -5,7 +5,8 @@
   "author": "Omri Spiguel",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "_dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "node server.js",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "node build/build.js"
@@ -13,6 +14,8 @@
   "dependencies": {
     "axios": "^0.17.1",
     "express": "^4.16.2",
+    "lodash": "^4.17.4",
+    "node-env-file": "^0.1.8",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
     "webpack-hot-middleware": "^2.21.0"
