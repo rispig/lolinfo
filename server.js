@@ -70,6 +70,8 @@ app.get('/summonerInfo', async (req, res, next) => {
       const {x, y, w, h} = profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image;
 
       const summonerJSON = {
+        summunerId: summonerInfoResponse.data.id,
+        accountId: summonerInfoResponse.data.accountId,
         name: summonerInfoResponse.data.name,
         level: summonerInfoResponse.data.summonerLevel,
         rank: soloQ.rank,
