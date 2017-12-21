@@ -47,8 +47,8 @@ let cache = {};
 app.get('/summonerInfo', async (req, res, next) => {
   const {server, summoner} = req.query;
   const cacheKey = `${server}${summoner}`;
-  if (!cache[cacheKey]) {
-
+  if (!cache[cacheKey] || (Date.now() - cache[cacheKey].lastUpdated >= 180000)) {
+    console.log(!cache[cacheKey] ? 'New summoner' : 'Invalidating Cache');
     try {
       // Get basic summoner inf
       const summonerInfoResponse = await axios.get(`https://${server}.api.riotgames.com/lol/summoner/v3/summoners/by-name/${summoner}?api_key=${getAPIKey()}`);
@@ -72,18 +72,18 @@ app.get('/summonerInfo', async (req, res, next) => {
       const summonerJSON = {
         name: summonerInfoResponse.data.name,
         level: summonerInfoResponse.data.summonerLevel,
-        rank: rank,
+        rank: soloQ.rank,
+        tier: soloQ.tier,
         profileIcon: {
-          url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/sprite/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.sprite}`,
-          x: x,
-          y: y,
-          w: w,
-          h: h
+          url: `${realmsResponse.data.cdn}/${realmsResponse.data.n.profileicon}/img/${profileImagesResponse.data.type}/${profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image.full}`,
         }
       }
 
       // Cache the response
-      cache[cacheKey] = summonerJSON;
+      cache[cacheKey] = {
+        data: summonerJSON,
+        lastUpdated: Date.now(),
+      }
 
     } catch (ex) {
       console.log(ex && ex.response ? ex.response.statusText || "" : "");
@@ -94,7 +94,7 @@ app.get('/summonerInfo', async (req, res, next) => {
   }
 
   res.setHeader('Content-Type', 'application/json');
-  res.send(cache[cacheKey]);
+  res.send(cache[cacheKey].data);
   return next();
 });
 
