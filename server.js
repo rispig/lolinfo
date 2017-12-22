@@ -44,25 +44,60 @@ app.use(webpackHotMiddleware(compiler));
 app.use(express.static(__dirname));
 
 let cache = {};
-app.get('/summonerInfo', async (req, res, next) => {
-  const {server, summoner} = req.query;
+app.get('/getSummoner', async (req, res, next) => {
+  const {region, summoner} = req.query;
   const cacheKey = `${server}${summoner}`;
+  var server = '';
+  switch (region) {
+    case 'EUNE':
+      server = 'eun1.api.riotgames.com';
+      break;
+    case 'EUW':
+      server = 'euw1.api.riotgames.com';
+      break;
+    case 'JP':
+      server = 'jp1.api.riotgames.com';
+      break;
+    case 'KR':
+      server = 'kr.api.riotgames.com';
+      break;
+    case 'LAN':
+      server = 'la1.api.riotgames.com';
+      break;
+    case 'LAS':
+      server = 'la2.api.riotgames.com';
+      break;
+    case 'NA':
+      server = 'na1.api.riotgames.com';
+      break;
+    case 'OCE':
+      server = 'oc1.api.riotgames.com';
+      break;
+    case 'TR':
+      server = 'tr1.api.riotgames.com';
+      break;
+    case 'RU':
+      server = 'ru.api.riotgames.com';
+      break;
+    default:
+      server = '';
+    }
   if (!cache[cacheKey] || (Date.now() - cache[cacheKey].lastUpdated >= 180000)) {
     console.log(!cache[cacheKey] ? 'New summoner' : 'Invalidating Cache');
     try {
       // Get basic summoner inf
-      const summonerInfoResponse = await axios.get(`https://${server}.api.riotgames.com/lol/summoner/v3/summoners/by-name/${summoner}?api_key=${getAPIKey()}`);
+      const summonerInfoResponse = await axios.get(`https://${server}/lol/summoner/v3/summoners/by-name/${summoner}?api_key=${getAPIKey()}`);
 
       // Find summoner's soloQ rank
-      const summonerRankInfo = await axios.get(`https://${server}.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerInfoResponse.data.id}?api_key=${getAPIKey()}
+      const summonerRankInfo = await axios.get(`https://${server}/lol/league/v3/positions/by-summoner/${summonerInfoResponse.data.id}?api_key=${getAPIKey()}
       `);
 
       // Get static resources CDN
-      const realmsResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/realms?api_key=${getAPIKey()}
+      const realmsResponse = await axios.get(`https://${server}/lol/static-data/v3/realms?api_key=${getAPIKey()}
       `)
 
       // Get profile icons list
-      const profileImagesResponse = await axios.get(`https://${server}.api.riotgames.com/lol/static-data/v3/profile-icons?locale=en_US&api_key=${getAPIKey()}`)
+      const profileImagesResponse = await axios.get(`https://${server}/lol/static-data/v3/profile-icons?locale=en_US&api_key=${getAPIKey()}`)
 
       const soloQ = summonerRankInfo.data.filter(q => q.queueType === 'RANKED_SOLO_5x5')[0];
       const rank = `${soloQ.tier} ${soloQ.rank}`;
@@ -70,7 +105,7 @@ app.get('/summonerInfo', async (req, res, next) => {
       const {x, y, w, h} = profileImagesResponse.data.data[summonerInfoResponse.data.profileIconId].image;
 
       const summonerJSON = {
-        summunerId: summonerInfoResponse.data.id,
+        summonerId: summonerInfoResponse.data.id,
         accountId: summonerInfoResponse.data.accountId,
         name: summonerInfoResponse.data.name,
         level: summonerInfoResponse.data.summonerLevel,

@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: 'LolInfo',
+  name: 'SummonerInfo',
   data() {
     return {
       summonerInfo: null,
@@ -24,9 +24,10 @@ export default {
   },
   methods: {
     async getSummonerInfo() {
+      const { summoner, region } = this.$route.query;
       try {
         this.summonerInfoResponse =
-          await fetch('/summonerInfo?summoner=N00B&server=euw1').then((res) => {
+          await fetch(`/getSummoner?summoner=${summoner}&region=${region}`).then((res) => {
             if (!res.ok) {
               throw new Error(res.statusText || 'An unkown error has occurred\nPlease try again later');
             }
