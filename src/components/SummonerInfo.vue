@@ -72,7 +72,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   .h-container, .v-container {
     display: flex;
   }
@@ -84,45 +84,44 @@ export default {
   .summoner-info-container {
     background-color: #eee;
     padding: 20px;
-  }
 
-  .summoner-info-container > .profile-icon{
-    --borderColor: #cd7f32;
+    > .profile-icon{
+      --borderColor: #cd7f32;
 
-    height: 100px;
-    width: 100px;
-    border-radius: 50%;
-    box-shadow: 0px 0px 10px 5px var(--borderColor);
-    position: relative;
-    background-size: 100%;
-  }
-
-  .summoner-info-container > .profile-icon::before {
-      content: attr(data-level);
-      height: 20px;
-      width: 20px;
+      height: 100px;
+      width: 100px;
       border-radius: 50%;
-      position: absolute;
-      top: -10px;
-      left: calc(50% - 10px);
-      background-color: black;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
+      box-shadow: 0px 0px 10px 5px var(--borderColor);
+      position: relative;
+      background-size: 100%;
 
+      &::before {
+        content: attr(data-level);
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        position: absolute;
+        top: -10px;
+        left: calc(50% - 10px);
+        background-color: black;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+    }
   }
 
   .name-rank-container {
     flex: 1;
     margin-left: 20px;
-  }
 
-  .name-rank-container > div {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: flex-start;
+    >  div {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: flex-start;
+    }
   }
 </style>

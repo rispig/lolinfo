@@ -1,7 +1,5 @@
 <template>
-  <form
-    class="container"
-    @submit.prevent="onSubmit">
+  <form @submit.prevent="onSubmit">
     <input
       name="summoner"
       type="text"
@@ -59,7 +57,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-
-</style>
