@@ -7,6 +7,7 @@
       placeholder="Summoner Name"
       v-model="summoner"
     />
+    <i class="fa fa-search"></i>
     <select
       name="region"
       v-model="region">
@@ -57,3 +58,23 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+  input[type="text"], .fa-search, select {
+    position: relative;
+  }
+
+  input[type="text"] {
+    padding-right: 20px;
+  }
+
+  .fa-search {
+    left: -25px;
+    font-size: 12px;
+    color: #ccc;
+  }
+
+  select {
+    left: -12px;
+  }
+</style>

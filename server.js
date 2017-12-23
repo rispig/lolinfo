@@ -42,6 +42,7 @@ const getAPIKey = function () {
 app.use(middleware);
 app.use(webpackHotMiddleware(compiler));
 app.use(express.static(__dirname));
+app.use(express.static(__dirname + '/static'));
 
 let cache = {};
 app.get('/getSummoner', async (req, res, next) => {
