@@ -26,6 +26,12 @@ const middleware = webpackMiddleware(compiler, {
     modules: false
   }
 });
+app.use(middleware);
+app.use(webpackHotMiddleware(compiler, {
+  log: console.log,
+  path: '/__webpack_hmr',
+  heartbeat: 10 * 1000
+}));
 
 env(__dirname + '/.env');
 
@@ -33,18 +39,17 @@ const apiKeys = [process.env.API_KEY, process.env.ALT_API_KEY];
 
 let lastKeyUsed = 0;
 const getAPIKey = function () {
-  lastKeyUsed = ~lastKeyUsed + 2
+  lastKeyUsed = ~lastKeyUsed + 2;
   console.log('using key', apiKeys[lastKeyUsed]);
 
   return apiKeys[lastKeyUsed];
 }
 
-app.use(middleware);
-app.use(webpackHotMiddleware(compiler));
 app.use(express.static(__dirname));
 app.use(express.static(__dirname + '/static'));
 
 let cache = {};
+
 app.get('/getSummoner', async (req, res, next) => {
   const {region, summoner} = req.query;
   const cacheKey = `${server}${summoner}`;

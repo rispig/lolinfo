@@ -4,7 +4,7 @@
       name="summoner"
       type="text"
       value=""
-      placeholder="Summoner Name"
+      placeholder="Summoner Name..."
       v-model="summoner"
     />
     <i class="fa fa-search"></i>
@@ -45,15 +45,27 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
+    async onSubmit() {
       console.log(`Searching for ${this.summoner} in ${this.region}`);
-      this.$router.push({
-        path: '/SummonerInfo',
-        query: {
-          summoner: this.summoner,
-          region: this.region,
-        },
-      });
+      let err = null;
+      let data = null;
+
+      try {
+        data =
+          await fetch(`/getSummoner?summoner=${this.summoner}&region=${this.region}`)
+            .then(async (res) => {
+              if (!res.ok) {
+                err = res.statusText || 'An unkown error has occurred\nPlease try again later';
+                return null;
+              }
+
+              return res.json();
+            });
+      } catch (ex) {
+        err = ex;
+      }
+
+      this.$emit('summoner-found', err, data);
     },
   },
 };

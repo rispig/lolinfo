@@ -4,6 +4,9 @@ const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
 
+const PORT = process.env.PORT && Number(process.env.PORT)
+
+
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
@@ -21,9 +24,10 @@ const createLintingRule = () => ({
 
 module.exports = {
   context: path.resolve(__dirname, '../'),
-  entry: {
-    app: './src/main.js'
-  },
+  entry: [
+    'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000',
+    './src/main.js',
+  ],
   output: {
     path: config.build.assetsRoot,
     filename: '[name].js',

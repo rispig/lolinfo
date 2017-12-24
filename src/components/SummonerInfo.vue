@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <div class="h-container summoner-info-container" v-if="summonerInfo">
-      <div class="profile-icon" v-if="profileIconStyle" :style="profileIconStyle" :data-level="summonerInfo.level"></div>
+    <div class="h-container summoner-info-container" v-if="summoner">
+      <div class="profile-icon" v-if="profileIconStyle" :style="profileIconStyle" :data-level="summoner.level"></div>
       <div class="v-container name-rank-container">
-        <div>{{ summonerInfo.name }}</div>
-        <div>{{ summonerInfo.tier }} {{ summonerInfo.rank }}</div>
+        <div>{{ summoner.name }}</div>
+        <div>{{ summoner.tier }} {{ summoner.rank }}</div>
       </div>
     </div>
   </div>
@@ -13,35 +13,20 @@
 <script>
 export default {
   name: 'SummonerInfo',
+  props: ['summoner'],
   data() {
     return {
-      summonerInfo: null,
       profileIconStyle: null,
     };
   },
   created() {
-    this.getSummonerInfo();
+    this.getProfileIconStyle();
   },
   methods: {
-    async getSummonerInfo() {
-      const { summoner, region } = this.$route.query;
-      try {
-        this.summonerInfoResponse =
-          await fetch(`/getSummoner?summoner=${summoner}&region=${region}`).then((res) => {
-            if (!res.ok) {
-              throw new Error(res.statusText || 'An unkown error has occurred\nPlease try again later');
-            }
-            return res;
-          });
-      } catch (ex) {
-        alert(ex);
-        return false;
-      }
-
-      this.summonerInfo = await this.summonerInfoResponse.json();
-
+    getProfileIconStyle() {
       let borderColor = null;
-      switch (this.summonerInfo.tier) {
+
+      switch (this.summoner.tier) {
         case 'BRONZE':
           borderColor = '#cd7f32';
           break;
@@ -63,10 +48,8 @@ export default {
 
       this.profileIconStyle = {
         '--borderColor': borderColor,
-        'background-image': `url(${this.summonerInfo.profileIcon.url})`,
+        'background-image': `url(${this.summoner.profileIcon.url})`,
       };
-
-      return true;
     },
   },
 };
